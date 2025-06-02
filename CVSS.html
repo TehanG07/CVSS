@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HackerOne CVSS Calculator</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #121212;
+            color: #ffffff;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            max-width: 600px;
+            background: #1e1e1e;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            text-align: left;
+        }
+        h1 {
+            color: #ff6f61;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: bold;
+            color: #ff6f61;
+        }
+        select {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #ff6f61;
+            border-radius: 5px;
+            background: #333;
+            color: #ffffff;
+        }
+        button {
+            background: #ff6f61;
+            color: white;
+            padding: 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            width: 100%;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #e65c50;
+        }
+        #result {
+            font-size: 20px;
+            margin-top: 20px;
+            font-weight: bold;
+            text-align: center;
+            color: #ff6f61;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>HackerOne CVSS Calculator</h1>
+        <label for="attackVector">Attack Vector:</label>
+        <select id="attackVector">
+            <option value="0.85">Network</option>
+            <option value="0.62">Adjacent</option>
+            <option value="0.55">Local</option>
+            <option value="0.2">Physical</option>
+        </select>
+        <label for="attackComplexity">Attack Complexity:</label>
+        <select id="attackComplexity">
+            <option value="0.77">Low</option>
+            <option value="0.44">High</option>
+        </select>
+        <label for="privilegesRequired">Privileges Required:</label>
+        <select id="privilegesRequired">
+            <option value="0.85">None</option>
+            <option value="0.62">Low</option>
+            <option value="0.27">High</option>
+        </select>
+        <label for="userInteraction">User Interaction:</label>
+        <select id="userInteraction">
+            <option value="0.85">None</option>
+            <option value="0.62">Required</option>
+        </select>
+        <label for="scope">Scope:</label>
+        <select id="scope">
+            <option value="0.5">Unchanged</option>
+            <option value="1.0">Changed</option>
+        </select>
+        <label for="confidentiality">Confidentiality:</label>
+        <select id="confidentiality">
+            <option value="0.0">None</option>
+            <option value="0.22">Low</option>
+            <option value="0.56">High</option>
+        </select>
+        <label for="integrity">Integrity:</label>
+        <select id="integrity">
+            <option value="0.0">None</option>
+            <option value="0.22">Low</option>
+            <option value="0.56">High</option>
+        </select>
+        <label for="availability">Availability:</label>
+        <select id="availability">
+            <option value="0.0">None</option>
+            <option value="0.22">Low</option>
+            <option value="0.56">High</option>
+        </select>
+        <button onclick="calculateCVSS()">Calculate CVSS</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        function calculateCVSS() {
+            let attackVector = parseFloat(document.getElementById('attackVector').value);
+            let attackComplexity = parseFloat(document.getElementById('attackComplexity').value);
+            let privilegesRequired = parseFloat(document.getElementById('privilegesRequired').value);
+            let userInteraction = parseFloat(document.getElementById('userInteraction').value);
+            let scope = parseFloat(document.getElementById('scope').value);
+            let confidentiality = parseFloat(document.getElementById('confidentiality').value);
+            let integrity = parseFloat(document.getElementById('integrity').value);
+            let availability = parseFloat(document.getElementById('availability').value);
+
+            let impactSubScore = 1 - ((1 - confidentiality) * (1 - integrity) * (1 - availability));
+            let exploitabilitySubScore = 8.22 * attackVector * attackComplexity * privilegesRequired * userInteraction;
+            let impactScore = scope === 1.0 ? 7.52 * (impactSubScore - 0.029) - 3.25 * Math.pow(impactSubScore - 0.02, 15) : 6.42 * impactSubScore;
+            let baseScore = scope === 1.0 ? Math.min(1.08 * (impactScore + exploitabilitySubScore), 10) : Math.min(impactScore + exploitabilitySubScore, 10);
+
+            let severity = '';
+            if (baseScore >= 9.0) {
+                severity = 'Critical';
+            } else if (baseScore >= 7.0) {
+                severity = 'High';
+            } else if (baseScore >= 4.0) {
+                severity = 'Medium';
+            } else if (baseScore >= 0.1) {
+                severity = 'Low';
+            } else {
+                severity = 'Informative';
+            }
+
+            document.getElementById('result').innerText = `CVSS Score: ${baseScore.toFixed(1)} (${severity})`;
+        }
+    </script>
+</body>
+</html>
